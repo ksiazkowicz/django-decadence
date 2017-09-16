@@ -25,6 +25,6 @@ def generate_html(request):
 
     # load the template and render it
     t = loader.get_template(template_file)
-    rendered = t.render(request_data)
+    rendered = t.render(request_data, request)
 
     return HttpResponse(rendered, content_type="text/html")
