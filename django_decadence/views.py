@@ -3,6 +3,19 @@ from __future__ import unicode_literals
 import json
 from django.http import HttpResponse, HttpResponseServerError
 from django.template import Context, loader
+from django.views.generic import ListView
+from django_decadence.models import SerializableQuerySet
+
+
+class DecadenceListView(ListView):
+    """
+    Custom ListView that adds "serialized" to context with Decadence-serialized queryset
+    """
+    def get_context_data(self):
+        context = super(DecadenceListView, self).get_context_data()
+        original_list = context["object_list"]
+        context["serialized"] = original_list.serialized(self.request.user) if original_list else None
+        return context
 
 
 def generate_html(request):
