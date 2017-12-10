@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import json
-from django.http import HttpResponse, HttpResponseServerError
+from django.http import JsonResponse, HttpResponse, HttpResponseServerError
 from django.template import Context, loader
 from django.views.generic import ListView
 from django_decadence.models import SerializableQuerySet
@@ -11,6 +11,30 @@ class DecadenceListView(ListView):
     """
     Custom ListView that adds "serialized" to context with Decadence-serialized queryset
     """
+    def get(self, request, *args, **kwargs):
+        original = super(DecadenceListView, self).get(request, *args, **kwargs)
+        if request.is_ajax():
+            context = self.get_context_data()
+            data = {
+                "results": context.get("serialized", []),
+                "page": 1,
+                "is_paginated": context.get("is_paginated", False),
+                "range": [1, ],
+                "count": self.object_list.count(),
+                "num_pages": 1,
+            }
+
+            # include pagination data if available
+            page = context.get("page_obj", None)
+            if page:
+                data["page"] = page.number
+                data["num_pages"] = page.paginator.num_pages
+                data["range"] = list(page.paginator.page_range)
+
+            return JsonResponse(data)
+        else:
+            return original
+
     def get_context_data(self):
         context = super(DecadenceListView, self).get_context_data()
         original_list = context["object_list"]
