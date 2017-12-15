@@ -1,1 +1,1 @@
-{% load decadence_tags %}{% for element in batch %}<div>{% decadence_render element.template element.data %}</div>{% endfor %}
+{% load decadence_tags %}{% for element in batch %}<{{ container }}>{% decadence_render element.template element.data %}</{{ container }}>{% endfor %}
