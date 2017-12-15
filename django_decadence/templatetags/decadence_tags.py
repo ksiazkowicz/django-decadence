@@ -10,3 +10,8 @@ def decadence_render(context, template_name, data):
     except:
         pass
     return t.render(data)
+
+
+@register.simple_tag
+def value_by_key(obj, key):
+    return obj.get(key, "")

@@ -42,6 +42,20 @@ class DecadenceListView(ListView):
         return context
 
 
+class DecadenceTableView(DecadenceListView):
+    """
+    Implements a Decadence-serialized paginated table view.
+    """
+    def get_context_data(self):
+        context = super(DecadenceTableView, self).get_context_data()
+        context["table_model"] = self.table_model
+        try:
+            context["update_namespace"] = self.model.updates_namespace
+        except:
+            pass
+        return context
+
+
 def generate_html(request):
     """
     Generates HTML code from request. You should send a JSON through post this way:
