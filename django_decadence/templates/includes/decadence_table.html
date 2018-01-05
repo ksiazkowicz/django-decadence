@@ -4,7 +4,7 @@
     <thead>
         <tr>
             {% for key in table_model.keys %}
-            <th {% if key.has_url %}data-table-key-url="{{ key.url }}"{% endif %} 
+            <th {% if key.has_url %}data-table-key-url="{{ key.url }}"{% endif %} {% if key.custom_class %}data-table-custom-class="{{ key.custom_class }}"{% endif %} 
                 data-table-key-name="{{ key.name }}">
                 {{ key.verbose }}
             </th>{% endfor %}
@@ -14,7 +14,7 @@
         {% for obj in serialized %}
         <tr data-id="{{ obj.id }}">
             {% for key in table_model.keys %}
-            {% if key.has_url %}<td><a href="{% value_by_key obj key.url %}" {% else %}<td {% endif %}{% if update_namespace %} data-update-group="{{ update_namespace }}-{{ obj.id }}-{{ key.name }}"{% endif %} data-table-key="{{ key.name }}">
+            {% if key.has_url %}<td{% if key.custom_class %} class="{{ key.custom_class }}"{% endif %}><a href="{% value_by_key obj key.url %}" {% else %}<td{% if key.custom_class %} class="{{ key.custom_class }}"{% endif %} {% endif %}{% if update_namespace %} data-update-group="{{ update_namespace }}-{{ obj.id }}-{{ key.name }}"{% endif %} data-table-key="{{ key.name }}">
                 {% value_by_key obj key.name %}
             {% if key.has_url %}</a></td>{% else %}</td>{% endif %}
             {% endfor %}
