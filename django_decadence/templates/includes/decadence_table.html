@@ -1,4 +1,4 @@
-{% load decadence_tags %}
+{% load decadence_tags thumbnail %}
 
 <table {{ table_attrs }}>
     <thead>
@@ -15,7 +15,8 @@
         <tr data-id="{{ obj.id }}">
             {% for key in table_model.keys %}
             {% if key.has_url %}<td{% if key.custom_class %} class="{{ key.custom_class }}"{% endif %}><a href="{% value_by_key obj key.url %}" {% else %}<td{% if key.custom_class %} class="{{ key.custom_class }}"{% endif %} {% endif %}{% if update_namespace %} data-update-group="{{ update_namespace }}-{{ obj.id }}-{{ key.name }}"{% endif %} data-table-key="{{ key.name }}">
-                {% value_by_key obj key.name %}
+                {% value_by_key obj key.name as value %}
+                {% if key.is_image %}{% thumbnail value key.size crop="center" as im %}<img src="{{ im.url }}" />{% endthumbnail %}{% else %}{{ value }}{% endif %}
             {% if key.has_url %}</a></td>{% else %}</td>{% endif %}
             {% endfor %}
         </tr>
