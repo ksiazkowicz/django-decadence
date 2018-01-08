@@ -5,6 +5,7 @@ from django.http import JsonResponse, HttpResponse, HttpResponseServerError
 from django.template import Context, loader
 from django.views.generic import ListView
 from django_decadence.models import SerializableQuerySet
+from .helpers import check_template_path
 
 
 class DecadenceListView(ListView):
@@ -71,7 +72,7 @@ def generate_html(request):
     template_file = request_data.get("template", "")
 
     # check if path is valid
-    if not template_file.startswith("includes/decadence/"):
+    if check_template_path(template_file):
         return HttpResponseServerError("<h1>Invalid template</h1>")
 
     # load the template and render it
