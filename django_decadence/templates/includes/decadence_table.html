@@ -1,11 +1,11 @@
-{% load decadence_tags thumbnail %}
+{% load decadence_tags %}
 
 <table {{ table_attrs }}>
     <thead>
         <tr>
             {% for key in table_model.keys %}
             <th {% if key.has_url %}data-table-key-url="{{ key.url }}"{% endif %} {% if key.custom_class %}data-table-custom-class="{{ key.custom_class }}"{% endif %} 
-                data-table-key-name="{{ key.name }}">
+                data-table-key-name="{{ key.name }}"{% if key.is_image %} data-table-key-is_image="1"{% endif %}>
                 {{ key.verbose }}
             </th>{% endfor %}
         </tr>
@@ -16,7 +16,7 @@
             {% for key in table_model.keys %}
             {% if key.has_url %}<td{% if key.custom_class %} class="{{ key.custom_class }}"{% endif %}><a href="{% value_by_key obj key.url %}" {% else %}<td{% if key.custom_class %} class="{{ key.custom_class }}"{% endif %} {% endif %}{% if update_namespace %} data-update-group="{{ update_namespace }}-{{ obj.id }}-{{ key.name }}"{% endif %} data-table-key="{{ key.name }}">
                 {% value_by_key obj key.name as value %}
-                {% if key.is_image %}{% thumbnail value key.size crop="center" as im %}<img src="{{ im.url }}" />{% endthumbnail %}{% else %}{{ value }}{% endif %}
+                {% if key.is_image %}<img src="{{ value }}" />{% else %}{{ value }}{% endif %}
             {% if key.has_url %}</a></td>{% else %}</td>{% endif %}
             {% endfor %}
         </tr>
