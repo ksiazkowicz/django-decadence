@@ -1,0 +1,7 @@
+django<2
+channels==1.1.8
+
+# only for development
+sphinx 
+sphinx-autobuild
+sphinxcontrib.napoleon
