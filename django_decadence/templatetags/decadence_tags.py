@@ -13,6 +13,15 @@ def iso_date(value):
     return parse_datetime(value)
 
 
+@register.filter()
+def serialize(value, user):
+    """
+    Serialization returns an ISO date by default, this tags
+    allows converting it back for displaying it in template
+    """
+    return value.serialize(user)
+
+
 @register.simple_tag(takes_context=True)
 def decadence_render(context, template_name, data, **kwargs):
     """
@@ -46,49 +55,40 @@ def decadence_render(context, template_name, data, **kwargs):
     return template_obj.render(data)
 
 
-@register.simple_tag()
-def updatable_new(obj, path, value=None):
+@register.inclusion_tag("includes/decadence/updatable.html", takes_context=True)
+def decadence_updatable(context, path, attrs="", element="span"):
     """
-    Simple templatetag for including specific span element with a proper 
-    data-update-group data attribute, that enables Updates API.
-
-    :param obj: instance of DecadenceModel
-    :param path: path which defines specific element to update (ex. like.23)
-    :param value: current value of this element (ex. 5)
-
-    Returns:
-        .. code-block:: html
-        
-            <span data-update-group='post-12-like.23'>5</span>
+    Generates data-update-group for given path in
+    Decadence templates
     """
-    return template.Template("<span data-update-group='{{ path }}'>{{ value }}</span>").render(template.Context({
+    update_path = "%(namespace)s-%(obj_id)s-%(path)s" % {
+        "namespace": context["update_namespace"],
+        "obj_id": context["id"],
+        "path": path
+    }
+    return {
+        "path": update_path,
+        "value": context[path.split(".")[0]], # ignore users context
+        "attrs": attrs,
+        "element": element
+    }
+
+
+@register.inclusion_tag("includes/decadence/updatable.html", takes_context=True)
+def updatable(context, obj, path, attrs="", element="span"):
+    """
+    Generates data-update-group for given path in
+    Decadence templates
+    """
+    user = context.request.user
+    field = path.split(".")[0] # ignore users context
+    value = obj.serialize(user, fields=[field])[field]
+    return {
         "path": obj.get_update_path(path),
-        "value": value
-    }))
-
-
-@register.simple_tag()
-def updatable(namespace, obj, path, value=""):
-    """
-    Simple templatetag for including specific span element with a proper 
-    data-update-group data attribute, that enables Updates API.
-
-    :param namespace: update namespace, for example model name (ex. post)
-    :param obj: object id (ex. 12)
-    :param path: path which defines specific element to update (ex. like.23)
-    :param value: current value of this element (ex. 5)
-
-    Returns:
-        .. code-block:: html
-        
-            <span data-update-group='post-12-like.23'>5</span>
-    """
-    return template.Template("<span data-update-group='{{ namespace }}-{{ object }}-{{ path }}'>{{ value }}</span>").render(template.Context({
-        "namespace": namespace,
-        "object": obj,
-        "path": path, 
-        "value": value
-    }))
+        "value": value,
+        "attrs": attrs,
+        "element": element
+    }
 
 
 @register.simple_tag

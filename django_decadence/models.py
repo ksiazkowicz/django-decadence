@@ -91,22 +91,21 @@ class DecadenceModel(models.Model):
                     update(**options)
 
 
-    def serialize(self, user=None):
+    def serialize(self, user=None, fields=None):
         """
         Attempts to generate a JSON serializable dictionary
         based on current model
         """
-        # use Django's built-in model serialization
-        serialized = json.loads(serialize('json', [self]))[0]["fields"]
-        serialized["id"] = self.pk
-
         # you might want to define a list of fields to be serialized
-        if hasattr(self, "decadence_fields"):
-            fields = self.decadence_fields
-            # filter out fields that shouldn't be displayed
-            serialized = {key: value for key, value in serialized.items() if key in fields}
-        else:
-            fields = [f.name for f in self._meta.get_fields()]
+        if not fields:
+            if hasattr(self, "decadence_fields"):
+                fields = self.decadence_fields
+            else:
+                fields = [f.name for f in self._meta.get_fields()]
+
+        # use Django's built-in model serialization
+        serialized = json.loads(serialize('json', [self], fields=fields))[0]["fields"]
+        serialized["id"] = self.pk
 
         # begin serialization
         for field in fields:
@@ -131,21 +130,20 @@ class DecadenceModel(models.Model):
                     # nested Decadence serialization
                     value = original_value.serialized()
                 elif isinstance(original_value, models.Model):
-                    # use Django serializer for models #yolo
-                    fields = json.loads(serialize('json', [original_value]))[0]["fields"]
+                    # check for fields overrides
+                    overrides = []
+                    if hasattr(settings, "DECADENCE_FIELD_OVERRIDES"):
+                        overrides = settings.DECADENCE_FIELD_OVERRIDES.get(str(original_value._meta), [])
+
+                    # use overrides if provided and use Django serializer
+                    if len(overrides) > 0:
+                        fields = json.loads(serialize('json', [original_value], fields=overrides))
+                    else:
+                        fields = json.loads(serialize('json', [original_value]))
+                    fields = fields[0]["fields"]
 
                     # add pk to fields
                     fields["id"] = original_value.pk
-
-                    # check for fields overrides
-                    if hasattr(settings, "DECADENCE_FIELD_OVERRIDES"):
-                        # grab overrides
-                        overrides = settings.DECADENCE_FIELD_OVERRIDES.get(str(original_value._meta), [])
-
-                        # if someone actually defined it, use overrides
-                        if len(overrides) > 0:
-                            fields = {key: value for key, value in fields.items() if key in overrides}
-
                     value = fields
                 else:
                     continue
@@ -153,6 +151,6 @@ class DecadenceModel(models.Model):
             # save serialized value
             serialized[field] = value
 
-        serialized["_update_namespace"] = str(self._meta)
+        serialized["update_namespace"] = str(self._meta)
         return serialized
 
