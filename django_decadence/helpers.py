@@ -4,8 +4,8 @@ from django.conf import settings
 from channels import Group
 
 
-
-DECADENCE_DIR = getattr(settings, "DECADENCE_DIR", os.path.join("includes", "decadence"))
+DECADENCE_DIR = getattr(settings, "DECADENCE_DIR",
+                        os.path.join("includes", "decadence"))
 
 
 def check_template_path(path):
@@ -18,7 +18,8 @@ def check_template_path(path):
     normalized = os.path.normpath(path)
 
     if not normalized.startswith(DECADENCE_DIR):
-        raise Exception("Template path '%s' is outside '%s'" % normalized, DECADENCE_DIR)
+        raise Exception("Template path '%s' is outside '%s'" %
+                        (normalized, DECADENCE_DIR))
 
 
 def update(type_name="update_value", path="", value="", classname="",
