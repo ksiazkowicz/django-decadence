@@ -81,6 +81,8 @@ Usage:
 This tag will include ``<span>`` element with all required data
 attributes to enable automatic updates using ``UpdateListener``.
 
+You can also add ``safe=True`` as argument if you want string to be marked as safe.
+
 Model
 ~~~~~
 
