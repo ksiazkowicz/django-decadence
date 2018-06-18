@@ -1,8 +1,10 @@
 from django import template
 from django.utils.dateparse import parse_datetime
+from django.utils.safestring import mark_safe
 from django_decadence.helpers import check_template_path
 
 register = template.Library()
+
 
 @register.filter()
 def iso_date(value):
@@ -55,8 +57,9 @@ def decadence_render(context, template_name, data, **kwargs):
     return template_obj.render(data)
 
 
-@register.inclusion_tag("includes/decadence/updatable.html", takes_context=True)
-def decadence_updatable(context, path, attrs="", element="span"):
+@register.inclusion_tag(
+    "includes/decadence/updatable.html", takes_context=True)
+def decadence_updatable(context, path, attrs="", element="span", safe=False):
     """
     Generates data-update-group for given path in
     Decadence templates
@@ -66,27 +69,31 @@ def decadence_updatable(context, path, attrs="", element="span"):
         "obj_id": context["id"],
         "path": path
     }
+    value = context[path.split(".")[0]]  # ignore users context
     return {
         "path": update_path,
-        "value": context[path.split(".")[0]], # ignore users context
+        "value": value if not safe else mark_safe(value),
         "attrs": attrs,
+        "safe": safe,
         "element": element
     }
 
 
-@register.inclusion_tag("includes/decadence/updatable.html", takes_context=True)
-def updatable(context, obj, path, attrs="", element="span"):
+@register.inclusion_tag(
+    "includes/decadence/updatable.html", takes_context=True)
+def updatable(context, obj, path, attrs="", element="span", safe=False):
     """
     Generates data-update-group for given path in
     Decadence templates
     """
     user = context.request.user
-    field = path.split(".")[0] # ignore users context
+    field = path.split(".")[0]  # ignore users context
     value = obj.serialize(user, fields=[field])[field]
     return {
         "path": obj.get_update_path(path),
-        "value": value,
+        "value": value if not safe else mark_safe(value),
         "attrs": attrs,
+        "safe": safe,
         "element": element
     }
 
