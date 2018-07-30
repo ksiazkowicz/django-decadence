@@ -18,8 +18,8 @@ setup(
     author='Maciej Janiszewski',
     author_email='chleb@krojony.pl',
     install_requires=[
-        "django",
-        "channels"
+        "django<2",
+        "channels~=1.1.8"
     ],
     classifiers=[
         'Environment :: Web Environment',
